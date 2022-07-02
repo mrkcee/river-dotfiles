@@ -1,0 +1,90 @@
+#!/bin/sh
+
+## mod key / win key
+mod="Mod4"
+
+## exit river
+riverctl map normal $mod+Shift Q exit
+
+## run terminal
+riverctl map normal $mod Return spawn "foot"
+
+## run launcher
+riverctl map normal $mod Space spawn "fuzzel --prompt='  ' --terminal='foot -e' --background=0b151dff --text=c6d2edff --selection-color=ac8aacff --selection-text=0b151dff --border-width=9 --border-color=404b66ff --icon-theme=Papirus-Dark --match-color=bd6b6aff --font='mononoki Nerd Font':size=12 --lines=10 --line-height=20"
+
+## run powermenu
+riverctl map normal $mod+Shift P spawn "foot --title=powermenu.zsh ~/.config/yambar/scripts/powermenu.zsh"
+
+## tags
+for i in $(seq 1 6)
+do
+	tags=$((1 << ($i - 1)))
+
+  # Mod+[1-9] to focus tag [0-8]
+  riverctl map normal $mod $i set-focused-tags $tags
+
+  # Mod+Shift+[1-9] to tag focused view with tag [0-8]
+  riverctl map normal $mod+Shift $i set-view-tags $tags
+
+  # Mod+Ctrl+[1-9] to toggle focus of tag [0-8]
+  riverctl map normal $mod+Control $i toggle-focused-tags $tags
+
+  # Mod+Shift+Ctrl+[1-9] to toggle tag [0-8] of focused view
+  riverctl map normal $mod+Shift+Control $i toggle-view-tags $tags
+done
+
+## mouse: move view
+riverctl map-pointer normal $mod BTN_LEFT move-view
+
+## mouse: resize view
+riverctl map-pointer normal $mod BTN_RIGHT resize-view
+
+## window: close
+riverctl map normal $mod W close
+
+## focus: next / previous
+riverctl map normal $mod J focus-view next
+riverctl map normal $mod K focus-view previous
+
+## focus: swap
+riverctl map normal $mod+Shift J swap next
+riverctl map normal $mod+Shift K swap previous
+
+## toggle full screen
+riverctl map normal $mod F toggle-fullscreen
+
+## toggle float
+riverctl map normal $mod S toggle-float
+
+## screenshots
+## screenshots: whole screen
+riverctl map normal None Print spawn "grim $HOME/screenshots/\$(date +'screenshot_%Y-%m-%d-%H%M%S.png')"
+
+## screenshots: selection
+riverctl map normal Shift Print spawn "slurp | grim -g - $HOME/screenshots/\$(date +'screenshot_%Y-%m-%d-%H%M%S.png')"
+
+## border configuration
+riverctl border-color-focused 0xa6729f #0xac8aac #0x404B66
+riverctl border-color-unfocused 0x404b66 #0x0B151D
+riverctl border-width 3
+
+## rivertile
+riverctl default-layout rivertile
+riverctl spawn "rivertile -main-ratio 0.55"
+
+## rivertile: change layout
+riverctl map normal $mod Up    send-layout-cmd rivertile "main-location top"
+riverctl map normal $mod Right send-layout-cmd rivertile "main-location right"
+riverctl map normal $mod Down  send-layout-cmd rivertile "main-location bottom"
+riverctl map normal $mod Left  send-layout-cmd rivertile "main-location left"
+
+## float filters
+riverctl float-filter-add title "nmtui"
+riverctl float-filter-add title "powermenu.zsh"
+
+## autorun
+riverctl spawn "wbg $HOME/Downloads/aisberg-voda-art-ostrov-led-arktika-krasota.jpg"
+riverctl spawn "pgrep -x yambar > /dev/null || yambar &"
+riverctl spawn "pgrep -x pipewire > /dev/null || pipewire &"
+riverctl spawn "pgrep -x pipewire-pulse > /dev/null || pipewire-pulse &"
+riverctl spawn "exec mako"

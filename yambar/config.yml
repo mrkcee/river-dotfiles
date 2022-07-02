@@ -1,0 +1,132 @@
+col_bg: &col_bg 0B151DFF
+col_fg: &col_fg C5C8C6FF
+col_active: &col_active AC8AACFF
+col_empty: &col_empty 404B66FF
+col_occupied: &col_occupied C6D2EDFF
+col_red: &col_red BD6B64FF
+col_yellow: &col_yellow C7B079FF
+col_blue: &col_blue 6A9FB8FF
+col_magenta: &col_magenta A6729FFF
+col_green: &col_green 5CB574FF
+
+main_font: &main_font mononoki Nerd Font:pixelsize=17
+title_font: &title_font mononoki Nerd Font:pixelsize=15
+icon_font: &icon_font mononoki Nerd Font:pixelsize=19
+
+bar:
+  height: 45
+  location: top
+  spacing: 5
+  background: *col_bg
+  foreground: *col_fg
+  margin: 7
+
+  font: *main_font
+
+  left:
+    - river:
+        anchors:
+          - id: &name { text: "" }
+          - string: &focus { string: { <<: *name, foreground: *col_active, margin: 10 } }
+          - string: &normal { string: { <<: *name, foreground: *col_empty, margin: 10 } }
+          - string: &occupied { string: { <<: *name, foreground: *col_occupied, margin: 10 } }
+          - string: &focused { string: { <<: *name, foreground: *col_active, margin: 10 } }
+          - string: &unfocused { string: { <<: *name, foreground: *col_empty, margin: 10 } }
+          - base: &river_base
+              tag: state
+              default: *normal
+              values:
+                focused: *focused
+                unfocused: *unfocused
+                invisible:
+                  map:
+                    tag: occupied
+                    values:
+                      true: *occupied
+                      false: *normal
+        content:
+          map:
+            on-click:
+              left: sh -c "riverctl set-focused-tags $((1 << ({id} - 1)))"
+              right: sh -c "riverctl toggle-focused-tags $((1 << ({id} -1)))"
+              middle: sh -c "riverctl toggle-view-tags $((1 << ({id} -1)))"
+            tag: id
+            values:
+              1: { map: { <<: *river_base } }
+              2: { map: { <<: *river_base } }
+              3: { map: { <<: *river_base } }
+              4: { map: { <<: *river_base } }
+              5: { map: { <<: *river_base } }
+              6: { map: { <<: *river_base } }
+  center:
+    - river:
+        content:
+          map:
+            tag: title
+            values:
+              1: { map: { <<: *river_base } }
+        title:
+          map:
+            tag: title
+            default:
+              {
+                string:
+                  {
+                    text: "{title}",
+                    left-margin: 12,
+                    right-margin: 12,
+                    max: 50,
+                    font: *title_font,
+                  },
+              }
+            values: { "": { string: { text: "" } } }    
+  right:
+    - script:
+        path: /home/mrkcee/.config/yambar/scripts/audio.zsh
+        content:
+          map:
+            on-click: "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+            tag: muted
+            values:
+              true:
+                string:
+                  text: " "
+                  font: *icon_font
+              false:
+                string:
+                  text: " "
+                  font: *icon_font
+
+    - network:
+        name: wlp38s0
+        poll-interval: 15
+        content:
+          map:
+            on-click: "foot --title=nmtui -e nmtui"
+            tag: carrier
+            values:
+              false:
+                string:
+                  text: "睊"
+                  font: *icon_font
+              true:
+                string:
+                  text: "直"
+                  font: *icon_font
+    - clock:
+        time-format: "%I:%M%p"
+        date-format: "%B %d"
+        foreground: *col_occupied
+        content:
+          string:
+            text: " {date} {time}"
+            font: *main_font
+            left-margin: 3
+    - label:
+        content:
+          string:
+            on-click: "riverctl spawn 'foot --title=powermenu.zsh -e ~/.config/yambar/scripts/powermenu.zsh'"
+            text: " "
+            font: *icon_font
+            foreground: *col_red
+            left-margin: 3
